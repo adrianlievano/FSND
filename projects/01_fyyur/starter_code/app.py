@@ -32,8 +32,10 @@ migrate = Migrate(app, db)
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 shows = db.Table('Show',
+                db.Column('id', db.Integer, primary_key = True),
                 db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key = True),
-                db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key= True)
+                db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key= True),
+                db.Column('show_date', db.DateTime)
                 )
 
 class Venue(db.Model):
@@ -69,10 +71,35 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
+    website_link = db.Column(db.String(200))
+    seeking_venue = db.Column(db.Boolean)
+    seeking_description = db.Column(db.String(500))
 
 db.create_all()
+
+#----------------------------------------------------------------------------#
+# Add in initial Seed Data
+#----------------------------------------------------------------------------#
+
+# artists = [Artist(id = 1, name = 'Guns n Petals', city = 'San Francisco',
+#                     state = 'CA', phone = '326-123-5000', genres = 'Rock N Roll',
+#                     image_link = 'https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80',
+#                     website_link = 'https://www.gunsnpetalsband.com',
+#                     facebook_link = 'https://www.facebook.com/GunsNPetals',
+#                     seeking_venue = True,
+#                     seeking_description = 'Looking for shows to perform at in the San Francisco Bay Area!'),
+#             Artist(id = 2, name = 'Matt Quevedo', city = 'New York', state = 'NY', phone = '300-400-5000',
+#             image_link = 'https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80',
+#             facebook_link = 'https://www.facebook.com/mattquevedo923251523',
+#             seeking_venue = False),
+#             Artist(id = 3, name = 'The Wild Sax Band', city = 'San Francisco', state = 'CA', phone = '432-325-5432',
+#             seeking_venue = False)]
+
+
+# for person in artists:
+#     db.session.add(person)
+#     db.session.commit()
+
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -124,6 +151,10 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
+
+  data = Venue.query.all()
+
+
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -450,35 +481,35 @@ def shows():
   data=[{
     "venue_id": 1,
     "venue_name": "The Musical Hop",
-    "artist_id": 4,
+    "artist_id": 1,
     "artist_name": "Guns N Petals",
     "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
     "start_time": "2019-05-21T21:30:00.000Z"
   }, {
     "venue_id": 3,
     "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
+    "artist_id": 2,
     "artist_name": "Matt Quevedo",
     "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
     "start_time": "2019-06-15T23:00:00.000Z"
   }, {
     "venue_id": 3,
     "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
+    "artist_id": 3,
     "artist_name": "The Wild Sax Band",
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-01T20:00:00.000Z"
   }, {
     "venue_id": 3,
     "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
+    "artist_id": 3,
     "artist_name": "The Wild Sax Band",
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-08T20:00:00.000Z"
   }, {
     "venue_id": 3,
     "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
+    "artist_id": 3,
     "artist_name": "The Wild Sax Band",
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
