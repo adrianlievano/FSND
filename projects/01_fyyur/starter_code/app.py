@@ -54,8 +54,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(500))
 
     #Configure the many to many relationship between venues, artists, and shows.
-    artists = db.relationship('Artist', backref = ('venue', lazy = True),
-                secondary = 'shows')
+    artists = db.relationship('Artist', secondary = shows, backref = db.backref('venue', lazy = True))
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
