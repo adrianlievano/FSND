@@ -75,9 +75,6 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
 
-#class Show(db.Model):
-    #__tablename__ = 'Show'
-    #id = db.Column(db.Integer)
 db.create_all()
 
 #----------------------------------------------------------------------------#
@@ -102,6 +99,14 @@ db.create_all()
 # for person in artists:
 #     db.session.add(person)
 #     db.session.commit()
+
+#INSERT INTO Shows
+
+#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (1,1, 1, '2019-05-21T21:30:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (2, 3, 2, '2019-06-15T23:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (3, 3, 3, '2035-04-01T20:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (4, 3, 3, '2035-04-08T20:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (5, 3, 3, '2035-04-15T20:00:00.000Z');
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -166,13 +171,14 @@ def venues():
         for venue in venues:
             venue_id = venue.id
             venue_name = venue.name
-            shows_per_venue = db.session.query(Show).filter(Show.show_date > datetime.now()).filter(Show.venue_id == venue_id)
+            #query_show = Venue.query.join(shows).join(Artist).filter((shows.c.venue_id == venue_id) & (shows.c.show_date > datetime.now()).all()
+            #print(query_show)
             data.append({
                         'city': city,
                         'state': state,
                         'venues': [{'id': venue_id,
                                     'name': venue_name,
-                                    'num_upcoming_shows':len(shows_per_venue)}]
+                                    'num_upcoming_shows':1}]
                         })
         #'name': row.name})
         #row.query.count(city = )
