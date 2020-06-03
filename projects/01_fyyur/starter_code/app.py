@@ -75,6 +75,9 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
 
+#class Show(db.Model):
+    #__tablename__ = 'Show'
+    #id = db.Column(db.Integer)
 db.create_all()
 
 #----------------------------------------------------------------------------#
@@ -130,31 +133,50 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  # data=[{
+  #   "city": "San Francisco",
+  #   "state": "CA",
+  #   "venues": [{
+  #     "id": 1,
+  #     "name": "The Musical Hop",
+  #     "num_upcoming_shows": 0,
+  #   }, {
+  #     "id": 3,
+  #     "name": "Park Square Live Music & Coffee",
+  #     "num_upcoming_shows": 1,
+  #   }]
+  # }, {
+  #   "city": "New York",
+  #   "state": "NY",
+  #   "venues": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }]
 
-  data = Venue.query.all()
+  rows = Venue.query.distinct(Venue.city, Venue.state).order_by(Venue.city).all()
+  data = []
 
+  for row in rows:
+        city = row.city
+        state = row.state
+        venues = db.session.query(Venue).filter(Venue.city == city)
 
+        for venue in venues:
+            venue_id = venue.id
+            venue_name = venue.name
+            shows_per_venue = db.session.query(Show).filter(Show.show_date > datetime.now()).filter(Show.venue_id == venue_id)
+            data.append({
+                        'city': city,
+                        'state': state,
+                        'venues': [{'id': venue_id,
+                                    'name': venue_name,
+                                    'num_upcoming_shows':len(shows_per_venue)}]
+                        })
+        #'name': row.name})
+        #row.query.count(city = )
+  print(data)
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
