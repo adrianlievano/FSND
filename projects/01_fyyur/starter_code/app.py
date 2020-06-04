@@ -353,16 +353,16 @@ def create_venue_submission():
   except:
       error = True
   finally:
-        if not error:
-            db.session.commit()
-            flash('Venue ' + request.form['name'] +
-                  ' was successfully listed!')
-        else:
-            flash('An error occurred. Venue ' +
-                  vname + ' could not be listed.')
-            db.session.rollback()
-        db.session.close()
-  return render_template('pages/home.html')
+      if not error:
+          db.session.commit()
+          flash('Venue ' + request.form['name'] +
+                      ' was successfully listed!')
+      else:
+          flash('An error occurred. Venue ' +
+                      vname + ' could not be listed.')
+          db.session.rollback()
+          db.session.close()
+      return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -378,16 +378,14 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
+  
+  artists = Artist.query.all()
+  data = []
+  for artist in artists:
+      datum = {'id':artist.id,
+               'name': artist.name}
+      data.append(datum)
+
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
