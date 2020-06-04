@@ -31,12 +31,12 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
-shows = db.Table('Show',
-                db.Column('id', db.Integer, primary_key = True),
-                db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key = True),
-                db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key= True),
-                db.Column('show_date', db.DateTime)
-                )
+# shows = db.Table('Show',
+#                 db.Column('id', db.Integer, primary_key = True),
+#                 db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key = True),
+#                 db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key= True),
+#                 db.Column('show_date', db.DateTime)
+#                 )
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -56,7 +56,9 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(500))
 
     #Configure the many to many relationship between venues, artists, and shows.
-    artists = db.relationship('Artist', secondary = shows, backref = db.backref('venue', lazy = True))
+    #artists = db.relationship('Artist', secondary = shows, backref = db.backref('venue', lazy = True))
+
+    shows = db.relationship('Show', backref = "Venue", lazy = True)
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -74,6 +76,14 @@ class Artist(db.Model):
     website_link = db.Column(db.String(200))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
+    shows = db.relationship('Show', backref = "Artist", lazy = True)
+
+class Show(db.Model):
+    __tablename__ = 'Show'
+    id = db.Column(db.Integer, primary_key = True)
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable = False)
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable = False)
+    start_time = db.Column(db.DateTime, nullable = False)
 
 db.create_all()
 
@@ -102,11 +112,11 @@ db.create_all()
 
 #INSERT INTO Shows
 
-#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (1,1, 1, '2019-05-21T21:30:00.000Z');
-#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (2, 3, 2, '2019-06-15T23:00:00.000Z');
-#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (3, 3, 3, '2035-04-01T20:00:00.000Z');
-#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (4, 3, 3, '2035-04-08T20:00:00.000Z');
-#INSERT INTO "Show" (id, venue_id, artist_id, show_date) VALUES (5, 3, 3, '2035-04-15T20:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, start_time) VALUES (1,1, 1, '2019-05-21T21:30:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, start_time) VALUES (2, 3, 2, '2019-06-15T23:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, start_time) VALUES (3, 3, 3, '2035-04-01T20:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, start_time) VALUES (4, 3, 3, '2035-04-08T20:00:00.000Z');
+#INSERT INTO "Show" (id, venue_id, artist_id, start_time) VALUES (5, 3, 3, '2035-04-15T20:00:00.000Z');
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -138,27 +148,6 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  # data=[{
-  #   "city": "San Francisco",
-  #   "state": "CA",
-  #   "venues": [{
-  #     "id": 1,
-  #     "name": "The Musical Hop",
-  #     "num_upcoming_shows": 0,
-  #   }, {
-  #     "id": 3,
-  #     "name": "Park Square Live Music & Coffee",
-  #     "num_upcoming_shows": 1,
-  #   }]
-  # }, {
-  #   "city": "New York",
-  #   "state": "NY",
-  #   "venues": [{
-  #     "id": 2,
-  #     "name": "The Dueling Pianos Bar",
-  #     "num_upcoming_shows": 0,
-  #   }]
-  # }]
 
   rows = Venue.query.distinct(Venue.city, Venue.state).order_by(Venue.city).all()
   data = []
@@ -167,21 +156,19 @@ def venues():
         city = row.city
         state = row.state
         venues = db.session.query(Venue).filter(Venue.city == city)
-
         for venue in venues:
             venue_id = venue.id
             venue_name = venue.name
-            #query_show = Venue.query.join(shows).join(Artist).filter((shows.c.venue_id == venue_id) & (shows.c.show_date > datetime.now()).all()
-            #print(query_show)
+            listOfUpcomingShows = Venue.query.join(Show, Show.venue_id == Venue.id).filter(Show.start_time > datetime.utcnow()).all()
+            print(listOfUpcomingShows)
+
             data.append({
                         'city': city,
                         'state': state,
                         'venues': [{'id': venue_id,
                                     'name': venue_name,
-                                    'num_upcoming_shows':1}]
-                        })
-        #'name': row.name})
-        #row.query.count(city = )
+                                    'num_upcoming_shows':len(listOfUpcomingShows)}]                                        })
+
   print(data)
   return render_template('pages/venues.html', areas=data);
 
@@ -190,14 +177,30 @@ def search_venues():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
+  tag = request.form.get('search_term', None)
+  print(tag)
+  search_term = "%{}%".format(tag)
+  query_search = db.session.query(Venue).filter(Venue.name.ilike(search_term)).all()
+  print(query_search)
+  count_venues = len(query_search)
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  data = []
+  for venue in query_search:
+      datum = {
+        "id": venue.id,
+        "name": venue.name,
+        "num_upcoming_shows": 0,
+      }
+      data.append(datum)
+
+  response = {'count':count_venues,
+                'data': data}
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
