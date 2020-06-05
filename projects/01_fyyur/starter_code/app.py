@@ -172,7 +172,7 @@ def search_venues():
   query_search = db.session.query(Venue).filter(Venue.name.ilike(search_term)).all()
   count_venues = len(query_search)
   now = datetime.utcnow()
-
+  #numUpcomingShows = Show.query.join(Venue).filter(Venue)
   data = []
   for venue in query_search:
       datum = {
@@ -350,24 +350,27 @@ def create_venue_submission():
       flash('Success! You added ' + venue_name + ' as a Venue')
   except:
       error = True
+      flash('An error occurred. Venue ' + vname + ' could not be listed.')
+      db.session.rollback()
   finally:
       if not error:
           db.session.commit()
-          flash('Venue ' + request.form['name'] +
-                      ' was successfully listed!')
-      else:
-          flash('An error occurred. Venue ' +
-                      vname + ' could not be listed.')
-          db.session.rollback()
+          flash('Venue ' + request.form['name'] + ' was successfully listed!')
           db.session.close()
-      return render_template('pages/home.html')
+  return render_template('pages/home.html')
 
 #TODO
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
+  try:
+      Venue.query.filter_by(id = venue_id).delete()
+      db.session.commit()
+  except:
+      db.session.rollback()
+  finally:
+      db.session.close()
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   return None
@@ -545,18 +548,19 @@ def show_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
   form = ArtistForm()
+  qartist = Artist.query.get(artist_id)
   artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
+    "id": qartist.id,
+    "name": qartist.name,
+    "genres": qartist.genres,
+    "city": qartist.city,
+    "state": qartist.state,
+    "phone": qartist.phone,
+    "website": qartist.website,
+    "facebook_link": qartist.facebook_link,
+    "seeking_venue": qartist.seeking_venue,
+    "seeking_description": qartist.seeking_description,
+    "image_link": qartist.image_link
   }
   # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
@@ -565,26 +569,53 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
+  error = False
+  form = request.form.to_dict(True)
+  genres = request.form.getlist('genres')
 
+  try:
+      artist = Artist.query.get(artist_id)
+      artist.name = form['name']
+      artist.city = form['city']
+      artist.state = form['state']
+      artist.phone = form['phone']
+      artist.website = form['website']
+      artist.facebook_link = form['facebook_link']
+      artist.seeking_venue = form['seeking_venue']
+      artist.seeking_description = form['seeking_description']
+      artist.image_link = form['image_link']
+      artist.genres = list(genres)
+      db.session.commit()
+  except:
+      error = True
+      db.session.rollback()
+      flash('Error. Artist ' + form['name'] + ' could not be updated.')
+  finally:
+      if not error:
+          db.session.close()
+          flash('Artist ' + form['name'] + ' was successfully updated.')
   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
+
+  qvenue = Venue.query.get(venue_id)
+  venue = {
+    'id': qvenue.id,
+    'name': qvenue.name,
+    'genres': qvenue.genres,
+    'address': qvenue.address,
+    'city': qvenue.city,
+    'state': qvenue.state,
+    'phone': qvenue.phone,
+    'website': qvenue.website,
+    'facebook_link': qvenue.facebook_link,
+    'seeking_talent': qvenue.seeking_talent,
+    'seeking_description': qvenue.seeking_description,
+    'image_link': qvenue.image_link
+    }
+
   # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
@@ -592,6 +623,31 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+  venue = Venue.query.get(venue_id)
+  error = False
+  try:
+      venue = Venue.query.get(venue_id)
+      venue.name = request.form['name'],
+      venue.genres = request.form['genres']
+      venue.address = request.form['address']
+      venue.city = request.form['city']
+      venue.state = request.form['state']
+      venue.phone = request.form['phone']
+      venue.website = request.form['website']
+      venue.facebook_link = request.form['facebook_link']
+      venue.seeking_talent = request.form['seeking_talent']
+      venue.seeking_description = request.form['seeking_description']
+      venue.image_link = request.form['image_link']
+      db.session.commit()
+  except:
+      error = True
+      db.session.rollback()
+      flash('Error. Venue ' + request.form['name'] + ' could not be updated.')
+  finally:
+      if not error:
+          db.session.close()
+          flash('Artist ' + request.form['name'] + ' was successfully updated.')
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -607,7 +663,29 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-
+  error = False
+  try:
+      Artist(id = request.form['id'],
+             name = request.form['name'],
+             city = request.form['city'],
+             state = request.form['state'],
+             phone = request.form['phone'],
+             genres = request.form['genres'],
+             image_link = request.form['image_link'],
+             facebook_link = request.form['facebook_link'],
+             seeking_description = request.form['seeking_description'],
+             seeking_venue = request.form['seeking_venue'],
+             website_link = request.form['website_link']
+            )
+  except:
+        error = True
+        db.session.rollback()
+  finally:
+      db.session.commit()
+      flash('Error. Could not add artist ' + request.form['name'])
+      if not error:
+          flash('Successfully added new artist ' + request.form['name'].)
+      db.session.close()
   # on successful db insert, flash success
   flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
