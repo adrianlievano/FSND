@@ -295,7 +295,7 @@ def show_artist(artist_id):
     "past_shows_count": len(past_list),
     "upcoming_shows_count": len(upcoming_list)}
 
-    data = list(datum)
+  data = list(datum)
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
