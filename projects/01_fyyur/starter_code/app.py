@@ -429,7 +429,7 @@ def create_artist_submission():
              image_link = request.form['image_link'],
              facebook_link = request.form['facebook_link'],
              seeking_description = request.form['seeking_description'],
-             seeking_venue = request.form['seeking_venue'],
+             seeking_venue = Bool(request.form['seeking_venue']),
              website_link = request.form['website_link']
             )
   except:
