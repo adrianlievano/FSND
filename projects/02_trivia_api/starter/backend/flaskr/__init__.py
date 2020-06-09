@@ -96,12 +96,11 @@ def create_app(test_config=None):
 
           selection = Question.query.order_by(Question.id).all()
           paginated_questions = paginate_questions(response, selection)
-          formatted_questions = [question.format() for question in paginated_questions]
 
           return jsonify({'success': True,
                       'status_code': 200,
                       'deleted': question_id,
-                      'questions': formatted_questions})
+                      'questions': paginated_questions})
       except:
           abort(422)
 
@@ -126,10 +125,9 @@ def create_app(test_config=None):
           Question.insert(new_question)
           selection = Question.query.order_by(Question.id).all()
           paginated_questions = paginate_questions(response, selection)
-          formatted_questions = [question.format() for question in paginated_questions]
           result = jsonify({'success': True,
                 'created': new_question.id,
-                'questions': formatted_questions})
+                'questions': paginated_questions})
           return result
       except:
           abort(422)
@@ -144,8 +142,22 @@ def create_app(test_config=None):
   only question that include that string within their question.
   Try using the word "title" to start.
   '''
-  @app.route('/questions', methods = ['POST'])
+  @app.route('/questions/search', methods = ['POST'])
+  def search_questions():
+      data = response.get_json()
+      tag = data.get('search', None)
+      search_term = '%{}%'.format(tag)
 
+      try:
+          selection = db.session.query(Question).filter(Question.question.ilike(search_term)).order_by(Question.id).all()
+          if selection is None:
+              abort(404)
+          paginate_questions = paginate_questions(response, selection)
+          result = jsonify({'success': True,
+                            'questions': paginate_questions})
+          return result
+      except:
+          abort(422)
   '''
   @TODO:
   Create a GET endpoint to get questions based on category.
@@ -154,6 +166,10 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that
   category to be shown.
   '''
+  @app.route('/cagetories/<int:category_id>/questions', methods = ['GET'])
+  def get_questions():
+      data = response.get_json()
+
 
 
   '''
@@ -173,6 +189,18 @@ def create_app(test_config=None):
   Create error handlers for all expected errors
   including 404 and 422.
   '''
+  @app.errorhandler(404)
+  def not_found(error):
+      return jsonify({'success': False,
+                      'error': 404,
+                      'message': 'Not Found'}), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+      return jsonify({'success': False,
+                      'error': 422,
+                      'message': 'Request cannot be processed.'}), 422
+
 
   return app
 
