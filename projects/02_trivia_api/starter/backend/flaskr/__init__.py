@@ -63,7 +63,7 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions.
   '''
-  @app.route('/questions')
+  @app.route('/questions', methods = ['GET'])
   def get_questions():
       selection=Question.query.order_by(Question.id).all()
       current_questions = paginate_questions(request, selection)
@@ -73,8 +73,6 @@ def create_app(test_config=None):
 
       for category in categories:
           category_list[category.id] = category.type
-
-
 
       return jsonify({'success': True,
                       'questions': current_questions,
@@ -88,18 +86,25 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page.
   '''
-  @app.route('/question/<int question_id>', methods = ['DELETE'])
+  @app.route('/question/<int:question_id>', methods = ['DELETE'])
   def delete_question(question_id):
-      selected_question = Question.query.filter(Question.id == question_id).get_all_or_none()
-      Question.delete(selected_question)
+      try:
+          selected_question = Question.query.filter(Question.id == question_id).one_or_none()
+          if selected_question is None:
+              abort(404)
+          selected_question.delete()
 
-      selection = Question.query.order_by(Question.id).all()
-      paginated_questions = paginate_questions(response, selection)
-      formatted_questions = [question.format() for question in paginated_questions]
+          selection = Question.query.order_by(Question.id).all()
+          paginated_questions = paginate_questions(response, selection)
+          formatted_questions = [question.format() for question in paginated_questions]
 
-      return jsonify({'success': True,
+          return jsonify({'success': True,
                       'status_code': 200,
+                      'deleted': question_id,
                       'questions': formatted_questions})
+      except:
+          abort(422)
+
   '''
   @TODO:
   Create an endpoint to POST a new question,
@@ -110,9 +115,24 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.
   '''
-  @app.route('/questions/add', methods = ['POST'])
-  def new_question():
-      data = response.args.data
+  @app.route('/questions', methods = ['POST'])
+  def add_question():
+      try:
+          data = response.get_json()
+          new_question = Question(question = data.get('question', None),
+                                  answer = data.get('answer', None),
+                                  category = data.get('category', None),
+                                  difficulty = data.get('difficulty', None))
+          Question.insert(new_question)
+          selection = Question.query.order_by(Question.id).all()
+          paginated_questions = paginate_questions(response, selection)
+          formatted_questions = [question.format() for question in paginated_questions]
+          result = jsonify({'success': True,
+                'created': new_question.id,
+                'questions': formatted_questions})
+          return result
+      except:
+          abort(422)
 
   '''
   @TODO:
@@ -124,6 +144,7 @@ def create_app(test_config=None):
   only question that include that string within their question.
   Try using the word "title" to start.
   '''
+  @app.route('/questions', methods = ['POST'])
 
   '''
   @TODO:
