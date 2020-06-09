@@ -13,24 +13,20 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
-from models import Venue, Artist, Show
+from models import Venue, Artist, Show, db_setup
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
-
 app = Flask(__name__)
 moment = Moment(app)
-app.config.from_object('config')
-
-# TODO: connect to a local postgresql database
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+db = db_setup(app)
 
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-db.create_all()
 
+db.create_all()
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -429,16 +425,17 @@ def create_artist_submission():
              image_link = request.form['image_link'],
              facebook_link = request.form['facebook_link'],
              seeking_description = request.form['seeking_description'],
-             seeking_venue = Bool(request.form['seeking_venue']),
+             seeking_venue = request.form['seeking_venue'],
              website_link = request.form['website_link']
             )
+      db.session.add(new_artist)
+
   except:
         error = True
         flash('Error. Could not add artist ' + request.form['name'])
         db.session.rollback()
   finally:
       if not error:
-          db.session.add(new_artist)
           db.session.commit()
           flash('Successfully added new artist ' + request.form['name'])
           db.session.close()
