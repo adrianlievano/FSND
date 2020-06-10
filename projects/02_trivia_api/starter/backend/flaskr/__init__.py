@@ -46,12 +46,16 @@ def create_app(test_config=None):
 
       if len(categories) == 0:
           abort(404)
-      categories = [categories.format() for category in categories]
+
+      category_list = []
+
+      for cat in categories:
+          category_list.append(cat.type)
 
       return jsonify({'success': True,
-                      'categories': categories,
+                      'status_code': 200,
+                      'categories': category_list,
                       'total_categories': len(categories)})
-
 
   '''
   @TODO:
@@ -73,11 +77,13 @@ def create_app(test_config=None):
       current_category = None
       categories = Category.query.all()
       category_list = []
+
       for category in categories:
           category_list.append(category.type)
 
       return jsonify({'success': True,
                       'questions': current_questions,
+                      'status_code': 200,
                       'total_questions': total_questions,
                       'current_category': current_category,
                       'categories': category_list})
@@ -91,18 +97,16 @@ def create_app(test_config=None):
   @app.route('/question/<int:question_id>', methods = ['DELETE'])
   def delete_question(question_id):
       try:
-          selected_question = Question.query.filter(Question.id == question_id).one_or_none()
-          if selected_question is None:
-              abort(404)
-          selected_question.delete()
+          question = Question.query.filter(Question.id == question_id).one_or_none()
 
-          selection = Question.query.order_by(Question.id).all()
-          paginated_questions = paginate_questions(response, selection)
+          if question is None:
+              abort(404)
+
+          question.delete()
 
           return jsonify({'success': True,
                       'status_code': 200,
-                      'deleted': question_id,
-                      'questions': paginated_questions})
+                      'total_questions': len(Question.query.all())})
       except:
           abort(422)
 
@@ -118,15 +122,21 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods = ['POST'])
   def add_question():
+
+      data = request.get_json()
+      new_question = data.get('question', None)
+      new_answer = data.get('answer', None)
+      new_category = data.get('category', None)
+      new_difficulty = data.get('difficulty', None)
+
       try:
-          data = response.get_json()
-          new_question = Question(question = data.get('question', None),
-                                  answer = data.get('answer', None),
-                                  category = data.get('category', None),
-                                  difficulty = data.get('difficulty', None))
+          new_question = Question(question = new_question,
+                                  answer = new_answer,
+                                  category = new_category,
+                                  difficulty = new_difficulty)
           Question.insert(new_question)
           selection = Question.query.order_by(Question.id).all()
-          paginated_questions = paginate_questions(response, selection)
+          paginated_questions = paginate_questions(request, selection)
           result = jsonify({'success': True,
                 'created': new_question.id,
                 'questions': paginated_questions})
