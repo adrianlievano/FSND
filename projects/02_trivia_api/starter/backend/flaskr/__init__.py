@@ -215,7 +215,7 @@ def create_app(test_config=None):
       if prev_quest is None:
           current_q = Question.query.filter(Question.category == category_id).all()
       else:
-          current_q = Question.query.filter(Question.category == category_id)._not_in(prev_quest).all()
+          current_q = Question.query.filter(Question.category == category_id, notin_(prev_ques)).all()
 
       next_ques = random.choice(current_q)
 
