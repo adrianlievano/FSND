@@ -33,17 +33,57 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    #Test get categories endpoint
+    def test_get_categories(self):
+        res = self.client.get('/categories')
+        data = json.loads(res.data)
+        assertEqual(data['success'], True)
+        assertEqual(data['status_code'], 200)
+        assertTrue(date['total_questions'])
 
-    #Test question search by string endpoints
+    #Test get questions endpoint
+    def test_get_questions(self):
+        res = self.client.get('/questions')
+        data = json.loads(res.data)
+        assertEqual(data['success'], True)
+        assertEqual(data['status_code'], 200)
+        assertTrue(date['total_questions'])
+
+    #Test delete functionality of /questions/<int: question_id> endpoint
+    def test_delete_question(self):
+        res = self.client.post('/questions', json = {'question': 'What is a test question give?'
+                                                         'answer': 'A test answer.'
+                                                        'category': 1,
+                                                        'difficulty': 5})
+        data = json.loads(res.data)
+        question_id = data['created']
+        del_res = self.client.delete('/questions/question_id')
+
+        data_del = json.loads(del_res.data)
+        assertEqual(data_del['success'], True)
+        assertEqual(data_del['status_code'], 200)
+
+    #Test add functionality of /questions endpoint
+    def test_add_question(self):
+        res = self.client.post('/questions', json = {'question': 'What is a test question give?'
+                                                         'answer': 'A test answer.'
+                                                        'category': 1,
+                                                        'difficulty': 5})
+        data = json.loads(res.data)
+        assertEqual(data['success'], True)
+        assertTrue(data['total_questions'])
+        assertTrue(data['category'])
+
+    #Test search functionality of /questions endpoint
     def test_question_search_by_term(self):
-        request = self.client.post('/questions', json = {'searchTerm': 'actor'})
-        data = json.loads(request.data)
+        res = self.client.post('/questions', json = {'searchTerm': 'actor'})
+        data = json.loads(res.data)
         assertEqual(data['success'], True)
         assertEqual(data['status_code'], 200)
 
     def test_question_invalid_search_422_by_term(self):
-        request = self.client.post('/questions', json = {'searchTerm': 'Godzilla'})
-        data = json.loads(request.data)
+        res = self.client.post('/questions', json = {'searchTerm': 'Godzilla'})
+        data = json.loads(res.data)
         assertEqual(data['success'], False)
         assertEqual(data['status_code'], 404)
 
@@ -51,9 +91,9 @@ class TriviaTestCase(unittest.TestCase):
     def test_question_search_by_category(self):
         res = self.client.post('category/1/questions')
         data = json.loads(res.data)
-
         assertEqual(data['success'], True)
         assertTrue(data['questions'])
+
     def test_404_question_search_by_invalid_category(self):
         res = self.client.post('category/1000/questions')
         data = json.loads(res.data)
