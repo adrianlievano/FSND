@@ -33,7 +33,9 @@ def create_app(test_config=None):
   def after_request(response):
       response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, true')
       response.headers.add('Access-Control-Allow-Methods', 'GET, PATCH, POST, DELETE, OPTIONS')
+      return response
   '''
+
   @TODO:
   Create an endpoint to handle GET requests
   for all available categories.
@@ -70,9 +72,9 @@ def create_app(test_config=None):
       total_questions = len(selection)
       current_category = None
       categories = Category.query.all()
-
+      category_list = []
       for category in categories:
-          category_list[category.id] = category.type
+          category_list.append(category.type)
 
       return jsonify({'success': True,
                       'questions': current_questions,
@@ -166,9 +168,18 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that
   category to be shown.
   '''
-  @app.route('/cagetories/<int:category_id>/questions', methods = ['GET'])
-  def get_questions():
-      data = response.get_json()
+  # @app.route('/cagetories/<int:category_id>/questions', methods = ['GET'])
+  # def get_questions():
+  #     data = response.get_json()
+  #     try:
+  #         category = Category.query.filter(Category.id == category_id).one_or_none()
+  #         questions = Question.query.filter(Question.category == category.type).all()
+  #         if questions is None:
+  #             abort(404)
+  #         formatted_questions = paginate_questions(questions)
+  #     except:
+  #         abort(422)
+
 
 
 
