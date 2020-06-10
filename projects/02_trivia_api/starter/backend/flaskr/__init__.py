@@ -139,6 +139,8 @@ def create_app(test_config=None):
           paginated_questions = paginate_questions(request, selection)
           result = jsonify({'success': True,
                 'created': new_question.id,
+                'total_questions': len(Question.query.all()),
+                'current_category': new_category.type,
                 'questions': paginated_questions})
           return result
       except:
@@ -154,19 +156,21 @@ def create_app(test_config=None):
   only question that include that string within their question.
   Try using the word "title" to start.
   '''
-  @app.route('/questions/search', methods = ['POST'])
+  @app.route('/questions', methods = ['POST'])
   def search_questions():
-      data = response.get_json()
-      tag = data.get('search', None)
+      data = request.get_json()
+      tag = data.get('searchTerm', None)
       search_term = '%{}%'.format(tag)
 
       try:
           selection = db.session.query(Question).filter(Question.question.ilike(search_term)).order_by(Question.id).all()
           if selection is None:
               abort(404)
-          paginate_questions = paginate_questions(response, selection)
+          paginate_questions = paginate_questions(request, selection)
           result = jsonify({'success': True,
                             'status_code': 200,
+                            'current_category': None,
+                            'total_questions': len(Question.query.all()),
                             'questions': paginate_questions})
           return result
       except:
@@ -184,12 +188,16 @@ def create_app(test_config=None):
       data = request.get_json()
       try:
           questions = Question.query.filter(Question.category == category_id).all()
+          category = Category.query.get(category_id)
+
           if questions is None:
               abort(404)
           formatted_questions = paginate_questions(request, questions)
 
           return jsonify({'success': True,
                           'status_code': 200,
+                          'total_questions': len(Question.query.all()),
+                          'current_category': category.type,
                           'questions': formatted_questions})
       except:
           abort(422)
@@ -208,7 +216,6 @@ def create_app(test_config=None):
   @app.route('/quizzes', methods = ['POST'])
   def play():
       data = request.get_json()
-
       prev_ques = data['previous_questions']
       category_id = data['quiz_category']['id']
 
