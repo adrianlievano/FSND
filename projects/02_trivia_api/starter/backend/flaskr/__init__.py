@@ -166,6 +166,7 @@ def create_app(test_config=None):
               abort(404)
           paginate_questions = paginate_questions(response, selection)
           result = jsonify({'success': True,
+                            'status_code': 200,
                             'questions': paginate_questions})
           return result
       except:
@@ -178,20 +179,20 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that
   category to be shown.
   '''
-  # @app.route('/cagetories/<int:category_id>/questions', methods = ['GET'])
-  # def get_questions():
-  #     data = response.get_json()
-  #     try:
-  #         category = Category.query.filter(Category.id == category_id).one_or_none()
-  #         questions = Question.query.filter(Question.category == category.type).all()
-  #         if questions is None:
-  #             abort(404)
-  #         formatted_questions = paginate_questions(questions)
-  #     except:
-  #         abort(422)
+  @app.route('/cagetories/<int:category_id>/questions', methods = ['GET'])
+  def find_questions():
+      data = request.get_json()
+      try:
+          questions = Question.query.filter(Question.category == category_id).all()
+          if questions is None:
+              abort(404)
+          formatted_questions = paginate_questions(request, questions)
 
-
-
+          return jsonify({'success': True,
+                          'status_code': 200,
+                          'questions': formatted_questions})
+      except:
+          abort(422)
 
   '''
   @TODO:
@@ -204,7 +205,26 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not.
   '''
+  @app.route('/quizzes', methods = ['POST'])
+  def play():
+      data = request.get_json()
 
+      prev_ques = data['previous_questions']
+      category_id = data['quiz_category']['id']
+
+      if prev_quest is None:
+          current_q = Question.query.filter(Question.category == category_id).all()
+      else:
+          current_q = Question.query.filter(Question.category == category_id)._not_in(prev_quest).all()
+
+      next_ques = random.choice(current_q)
+
+      if next_ques is None:
+          abort(404)
+
+      return jsonify({'success': True,
+                      'status_code': 200,
+                      'question': next_ques})
   '''
   @TODO:
   Create error handlers for all expected errors
@@ -222,8 +242,12 @@ def create_app(test_config=None):
                       'error': 422,
                       'message': 'Request cannot be processed.'}), 422
 
+  @app.errorhandler(400)
+    def bad_request(error):
+      return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "Bad request."
+        }), 400
 
   return app
-
-# def __name__ == '__main__':
-#     create_app().run()
