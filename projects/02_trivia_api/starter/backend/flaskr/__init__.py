@@ -40,6 +40,7 @@ def create_app(test_config=None):
         category_list = []
         for cat in categories:
             category_list.append(cat.type)
+
         return jsonify({'success': True,
                         'status_code': 200,
                         'categories': category_list,
@@ -85,41 +86,37 @@ def create_app(test_config=None):
         new_answer = data.get('answer', None)
         new_category = data.get('category', None)
         new_difficulty = data.get('difficulty', None)
-        try:
-            new_question = Question(question=new_question,
-                                    answer=new_answer,
-                                    category=new_category,
-                                    difficulty=new_difficulty)
-            Question.insert(new_question)
-            selection = Question.query.order_by(Question.id).all()
-            paginated_questions = paginate_questions(request, selection)
-            result = jsonify({'success': True,
-                              'created': new_question.id,
-                              'total_questions': len(Question.query.all()),
-                              'current_category': new_category.type,
-                              'questions': paginated_questions})
-            return result
-        except:
-            abort(422)
-
-    @app.route('/questions', methods=['POST'])
-    def search_questions():
-        data = request.get_json()
         tag = data.get('searchTerm', None)
-        search_term = '%{}%'.format(tag)
+
         try:
-            selection = db.session.query(Question)\
+            if tag is not None:
+                search_term = '%{}%'.format(tag)
+                selection = db.session.query(Question)\
                                 .filter(Question.question.ilike(search_term))\
                                 .order_by(Question.id).all()
-            if selection is None:
-                abort(404)
-            paginate_questions = paginate_questions(request, selection)
-            result = jsonify({'success': True,
-                              'status_code': 200,
-                              'current_category': None,
-                              'total_questions': len(Question.query.all()),
-                              'questions': paginate_questions})
-            return result
+                if selection is None:
+                    abort(404)
+                paginate_questions = paginate_questions(request, selection)
+                result = jsonify({'success': True,
+                                  'status_code': 200,
+                                  'current_category': None,
+                                  'total_questions': len(Question.query.all()),
+                                  'questions': paginate_questions})
+                return result
+            else:
+                new_question = Question(question=new_question,
+                                        answer=new_answer,
+                                        category=new_category,
+                                        difficulty=new_difficulty)
+                Question.insert(new_question)
+                selection = Question.query.order_by(Question.id).all()
+                paginated_questions = paginate_questions(request, selection)
+                result = jsonify({'success': True,
+                                  'created': new_question.id,
+                                  'total_questions': len(Question.query.all()),
+                                  'current_category': new_category.type,
+                                  'questions': paginated_questions})
+                return result
         except:
             abort(422)
 
