@@ -16,7 +16,7 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 ## ROUTES
 '''
@@ -28,6 +28,14 @@ CORS(app)
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks', methods=['GET'])
+def get_drinks():
+    drinks = Drink.query.all().short()
+    return jsonify({'success': True,
+                    'status_code': 200,
+                    'drinks': drinks
+                    })
+
 
 '''
 @TODO implement endpoint
@@ -38,6 +46,13 @@ CORS(app)
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks-detail', methods=['GET'])
+def get_drinks():
+    drinks = Drink.query.all().long()
+    return jsonify({'success': True,
+                    'status_code': 200,
+                    'drinks': drinks
+                    })
 
 '''
 @TODO implement endpoint
@@ -49,6 +64,19 @@ CORS(app)
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks', methods=['POST'])
+def add_drink():
+    data = request.get_json()
+    new_drink = data['drink'].long()
+    try:
+        new_drink.insert()
+    except:
+        abort(422)
+
+    return jsonify({'success': True,
+                    'status_code': 200,
+                    'drinks': new_drink
+                    })
 
 '''
 @TODO implement endpoint
@@ -62,27 +90,53 @@ CORS(app)
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks/<int:id>', methods=['PATCH'])
+def update_drink(id):
+    data = request.get_json()
+    drink = Drink.query.filter(Drink.id == id).one_or_none()
+    drink.title = data['title']
+    drink.recipe = data['recipe']
 
-'''
-@TODO implement endpoint
-    DELETE /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should delete the corresponding row for <id>
-        it should require the 'delete:drinks' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-        or appropriate status code indicating reason for failure
-'''
+    try:
+        drink = drink.update().long()
+        return jsonify({'success': True,
+                        'status_code': 200,
+                        'drinks': drink
+                        })
+# '''
+# @TODO implement endpoint
+#     DELETE /drinks/<id>
+#         where <id> is the existing model id
+#         it should respond with a 404 error if <id> is not found
+#         it should delete the corresponding row for <id>
+#         it should require the 'delete:drinks' permission
+#     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
+#         or appropriate status code indicating reason for failure
+# '''
 
+@app.route('/drinks/<int:id>', methods=['DELETE'])
+def remove_drink(id):
+    data = request.get_json()
+    try:
+        drink_to_remove = Drink.query.filter(Drink.id == id).one_or_none()
+        drink_to_remove.delete()
+    except:
+        abort(404)
 
+    return jsonify({'success': True,
+                    'status_code': 200,
+                    'delete': id
+                    })
 ## Error Handling
+
 '''
 Example error handling for unprocessable entity
 '''
+
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
-                    "success": False, 
+                    "success": False,
                     "error": 422,
                     "message": "unprocessable"
                     }), 422
@@ -91,20 +145,21 @@ def unprocessable(error):
 @TODO implement error handlers using the @app.errorhandler(error) decorator
     each error handler should return (with approprate messages):
              jsonify({
-                    "success": False, 
+                    "success": False,
                     "error": 404,
                     "message": "resource not found"
                     }), 404
 
 '''
 
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"success": False,
+                    "error": 404,
+                    "message": "resource not found"}), 404
 
 
 '''
 @TODO implement error handler for AuthError
-    error handler should conform to general task above 
+    error handler should conform to general task above
 '''
