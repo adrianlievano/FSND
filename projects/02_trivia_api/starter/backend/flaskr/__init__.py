@@ -8,21 +8,19 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-
-def paginate_questions(response, selection):
-    page = response.args.get('page', 1, type=int)
-    start = (page - 1)*QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    questions = [question.format() for question in selection]
-    current_questions = questions[start:end]
-    return current_questions
-
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
     cors = CORS(app, resources={'/': {'origins': '*'}})
+
+    def paginate_questions(response, selection):
+        page = response.args.get('page', 1, type=int)
+        start = (page - 1)*QUESTIONS_PER_PAGE
+        end = start + QUESTIONS_PER_PAGE
+        questions = [question.format() for question in selection]
+        current_questions = questions[start:end]
+        return current_questions
 
     @app.after_request
     def after_request(response):
@@ -120,14 +118,16 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-    @app.route('/cagetories/<int:category_id>/questions', methods=['GET'])
-    def find_questions():
-        data = request.get_json()
+    @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+    def find_questions(category_id):
         try:
             questions = Question.query.\
                                     filter(Question.category == category_id).\
                                     all()
-            category = Category.query.get(category_id)
+            if category_id != 0:
+                category = Category.query.get(category_id)
+            else:
+                category = Category.query.get(category_id + 1)
             if questions is None:
                 abort(404)
             formatted_questions = paginate_questions(request, questions)
