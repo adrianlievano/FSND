@@ -8,6 +8,7 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -67,7 +68,7 @@ def create_app(test_config=None):
     def delete_question(question_id):
         try:
             question = Question.query.filter(Question.id == question_id)\
-                                                                .one_or_none()
+                .one_or_none()
             if question is None:
                 abort(404)
             question.delete()
@@ -90,8 +91,8 @@ def create_app(test_config=None):
             if tag is not None:
                 search_term = '%{}%'.format(tag)
                 selection = db.session.query(Question)\
-                                .filter(Question.question.ilike(search_term))\
-                                .order_by(Question.id).all()
+                    .filter(Question.question.ilike(search_term))\
+                    .order_by(Question.id).all()
                 if selection is None:
                     abort(404)
                 paginate_questions = paginate_questions(request, selection)
@@ -122,8 +123,8 @@ def create_app(test_config=None):
     def find_questions(category_id):
         try:
             questions = Question.query.\
-                                    filter(Question.category == category_id).\
-                                    all()
+                filter(Question.category == category_id).\
+                all()
             if category_id != 0:
                 category = Category.query.get(category_id)
             else:
@@ -155,16 +156,23 @@ def create_app(test_config=None):
     def play():
         data = request.get_json()
         prev_ques = data['previous_questions']
+        print(len(prev_ques))
         category_id = data['quiz_category']['id']
-        if prev_quest is None:
-            current_q = Question.query.\
-                                    filter(Question.category == category_id).\
-                                    all()
+        if category_id != 0:
+            if len(prev_ques) == 0:
+                current_q = Question.query.\
+                    filter(Question.category == category_id).\
+                    all()
+            else:
+                current_q = Question.query\
+                    .filter(Question.id == category_id, Question.id.notin_(prev_ques))\
+                    .all()
         else:
-            current_q = Question.query\
-                .filter(Question.category == category_id, notin_(prev_ques))\
-                .all()
-        next_ques = random.choice(current_q)
+            if len(prev_ques) == 0:
+                current_q = Question.query.all()
+            else:
+                current_q = Question.query.filter(Question.id.notin_(prev_ques)).all()
+        next_ques = random.choice(current_q).format()
         if next_ques is None:
             abort(404)
 
