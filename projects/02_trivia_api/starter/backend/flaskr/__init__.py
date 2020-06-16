@@ -8,6 +8,7 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -18,8 +19,7 @@ def create_app(test_config=None):
     def after_request(response):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, \
                                                         Authorization, true')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, PATCH, POST,\
-                                                        DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, PATCH, POST, DELETE, OPTIONS')
         return response
 
     def paginate_questions(response, selection):
@@ -71,7 +71,7 @@ def create_app(test_config=None):
             return jsonify({'success': True,
                             'question_id': question_id,
                             'total_questions': len(Question.query.all())})
-        except:
+        except BaseException:
             abort(422)
 
     @app.route('/questions', methods=['POST'])
@@ -131,7 +131,7 @@ def create_app(test_config=None):
                             'total_questions': len(Question.query.all()),
                             'current_category': category.type,
                             'questions': formatted_questions})
-        except:
+        except BaseException:
             abort(422)
 
     @app.route('/quizzes', methods=['POST'])

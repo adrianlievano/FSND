@@ -49,9 +49,9 @@ class TriviaTestCase(unittest.TestCase):
     # Test delete functionality of /questions/<int: question_id> endpoint
     def test_delete_question(self):
         res = self.client().post('/questions', json={'question': 'What?',
-                                                   'answer': 'Yo',
-                                                   'category': 1,
-                                                   'difficulty': 5})
+                                                     'answer': 'Yo',
+                                                     'category': 1,
+                                                     'difficulty': 5})
         data = json.loads(res.data)
         question_id = data['question_id']
         query_string = ('/questions/{}').format(question_id)
@@ -64,9 +64,9 @@ class TriviaTestCase(unittest.TestCase):
     # Test add functionality of /questions endpoint
     def test_add_question(self):
         res = self.client().post('/questions', json={'question': 'What?',
-                                                   'answer': 'A test answer.',
-                                                   'category': 1,
-                                                   'difficulty': 5})
+                                                     'answer': 'A test answer',
+                                                     'category': 1,
+                                                     'difficulty': 5})
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['total_questions'])
@@ -79,7 +79,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     def test_question_invalid_search_422_by_term(self):
-        res = self.client().post('/questions', json={'searchTerm': '!!!!!!Godzilla!!!!!'})
+        res = self.client().post('/questions', json={'searchTerm': '!Godzia!'})
         data = json.loads(res.data)
         self.assertEqual(data['success'], False)
         self.assertEqual(res.status_code, 422)
@@ -98,10 +98,11 @@ class TriviaTestCase(unittest.TestCase):
     # Test /quizzes endpoints
     def test_quiz_render_by_category(self):
         res = self.client().post('/quizzes', json={'previous_questions': [],
-                                                 'quiz_category': {'id': 1}})
+                                                   'quiz_category': {'id': 1}})
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(res.status_code, 200)
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

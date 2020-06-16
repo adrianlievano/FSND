@@ -79,6 +79,7 @@ POST '/quizzes'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category. 
 - Request Arguments: None
 - Returns: An object key values associated with categories. It contains an object of id: category_string key:value pairs. 
+
 {'1' : "Science",
 '2' : "Art",
 '3' : "Geography",
@@ -90,6 +91,7 @@ POST '/quizzes'
 - Fetches a list of dictionaries for game questions for all categories. 
 - Request Arguments: None
 - Returns: An list of question objects associated with different categories. 
+
 ```
 "questions": [
         {
@@ -105,19 +107,35 @@ POST '/quizzes'
             "difficulty": 4,
             "id": 4,
             "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
-        },...
+        },...]
 ```
+
 ### POST '/questions'
 - Adds a new question using the client-side form to the Question database for the game.
 - Request Arguments: The online form on the client side after a user clicks 'Add' a question.
 - Returns: An object of questions that contains the new question created. The object contains data about the number of total questions, the new added question id, and a success indicator. 
 
 Sample output: 
+
 ```
 {'success': True,
-'question_id': new_question.id,
-'total_questions': len(Question.query.all()),
-'questions': paginated_questions})
+'question_id': 3,
+'total_questions': 10,
+'questions': [
+        {
+            "answer": "Apollo 13",
+            "category": 5,
+            "difficulty": 4,
+            "id": 2,
+            "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+        },
+        {
+            "answer": "Tom Cruise",
+            "category": 5,
+            "difficulty": 4,
+            "id": 4,
+            "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+        },...]}
 ```
 
 ### DELETE '/questions/<int:question_id>'
@@ -126,21 +144,40 @@ Sample output:
 - Returns: An dictionary of values that correspond to a success indicator, the question id removed, and the new total number of questions in the game.
 
 Sample Output: 
-```{'success': True,
-'question_id': question_id,
-'total_questions': len(Question.query.all())}
 ```
+{
+'success': True,
+'question_id': 3,
+'total_questions': 10
+}
+```
+
 ### GET '/categories/<int:category_id>/questions'
 - Gets a list of questions associated with a category id. 
 - Request Arguments: The id of a category_id that the user wishes to remove. 
 - Returns: A success value, list of questions for a give category_id, total number of questions, the category type, and a current category.
 
 Sample Output:
+
 ```
-{'success': True,
-total_questions': len(Question.query.all()),
-'current_category': category.type,
-'questions': formatted_questions}
+'success': True,
+total_questions': 10,
+'current_category': "Geography",
+'questions': [
+        {
+            "answer": "Apollo 13",
+            "category": 5,
+            "difficulty": 4,
+            "id": 2,
+            "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+        },
+        {
+            "answer": "Tom Cruise",
+            "category": 5,
+            "difficulty": 4,
+            "id": 4,
+            "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+        },...]
 ```
 
 ### POST '/quizzes'
@@ -151,11 +188,19 @@ total_questions': len(Question.query.all()),
 ```
 Sample Output:
 {'success': True,
-'question': next_ques}
+'question': [
+        {
+            "answer": "Apollo 13",
+            "category": 5,
+            "difficulty": 4,
+            "id": 2,
+            "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+        }}
 ```
 
 ## Testing
 To run the tests, run
+
 ```
 dropdb trivia_test
 createdb trivia_test
