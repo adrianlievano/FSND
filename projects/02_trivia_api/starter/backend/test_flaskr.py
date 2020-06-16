@@ -62,7 +62,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(del_res.status_code, 200)
 
     def test_422_delete_question_failure(self):
-        question_id = 500 
+        question_id = 500
         query_string = ('/questions/{}').format(question_id)
         del_res = self.client().delete(query_string)
         self.assertEqual(del_res.status_code, 422)
@@ -118,9 +118,10 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_422_quizzes_failure(self):
         res = self.client().post('/quizzes', json={'previous_questions': [],
-                                                   'quiz_category': {'id': 'Apple'}})
+                                                   'quiz_category': {'id': 'A'}})
         data = json.loads(res.data)
-        self.assertTrue(res.status_code, 422)  
+        self.assertTrue(res.status_code, 422)
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
