@@ -18,7 +18,8 @@ CORS(app)
 '''
 db_drop_and_create_all()
 
-## ROUTES
+# ROUTES
+
 
 @app.route('/drinks', methods=['GET'])
 def get_drinks_short():
@@ -94,8 +95,9 @@ def update_drinks(payload, drink_id):
 
             drink.update()
 
-            #show updated drink
-            updated_drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+            # Show updated drink
+            updated_drink = Drink.query.filter(Drink.id == drink_id)\
+                                       .one_or_none()
 
             return jsonify({
                 "success": True,
@@ -108,8 +110,9 @@ def update_drinks(payload, drink_id):
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
 def delete_drinks(payload, drink_id):
-    drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
-    if drink == None:
+    drink = Drink.query.filter(Drink.id == drink_id).\
+                                        one_or_none()
+    if drink is None:
         abort(404)
     else:
         try:
@@ -122,7 +125,7 @@ def delete_drinks(payload, drink_id):
             abort(422)
 
 
-## Error Handling
+# Error Handling
 
 @app.errorhandler(422)
 def unprocessable(error):
