@@ -59,7 +59,13 @@ class TriviaTestCase(unittest.TestCase):
 
         data_del = json.loads(del_res.data)
         self.assertEqual(data_del['success'], True)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(del_res.status_code, 200)
+
+    def test_422_delete_question_failure(self):
+        question_id = 500 
+        query_string = ('/questions/{}').format(question_id)
+        del_res = self.client().delete(query_string)
+        self.assertEqual(del_res.status_code, 422)
 
     # Test add functionality of /questions endpoint
     def test_add_question(self):
@@ -70,6 +76,13 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['total_questions'])
+
+    def test_422_add_question_failure(self):
+        res = self.client().post('/questions', json={'question': 10,
+                                                     'answer': 10,
+                                                     'category': "Art",
+                                                     'difficulty': 1})
+        self.assertEqual(res.status_code, 422)
 
     # Test search functionality of /questions endpoint
     def test_question_search_by_term(self):
@@ -103,6 +116,11 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(res.status_code, 200)
 
+    def test_422_quizzes_failure(self):
+        res = self.client().post('/quizzes', json={'previous_questions': [],
+                                                   'quiz_category': {'id': 'Apple'}})
+        data = json.loads(res.data)
+        self.assertTrue(res.status_code, 422)  
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
