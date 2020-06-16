@@ -90,7 +90,7 @@ def create_app(test_config=None):
                 selection = Question.query\
                     .filter(Question.question.ilike(search_term))\
                     .order_by(Question.id).all()
-                if selection is None:
+                if len(selection) == 0:
                     abort(404)
                 paginated_questions = paginate_questions(request, selection)
                 result = jsonify({'success': True,
