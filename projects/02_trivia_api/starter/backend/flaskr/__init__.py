@@ -8,20 +8,11 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
     cors = CORS(app, resources={'/': {'origins': '*'}})
-
-    def paginate_questions(response, selection):
-        page = response.args.get('page', 1, type=int)
-        start = (page - 1)*QUESTIONS_PER_PAGE
-        end = start + QUESTIONS_PER_PAGE
-        questions = [question.format() for question in selection]
-        current_questions = questions[start:end]
-        return current_questions
 
     @app.after_request
     def after_request(response):
@@ -31,6 +22,14 @@ def create_app(test_config=None):
                                                         DELETE, OPTIONS')
         return response
 
+    def paginate_questions(response, selection):
+        page = response.args.get('page', 1, type=int)
+        start = (page - 1)*QUESTIONS_PER_PAGE
+        end = start + QUESTIONS_PER_PAGE
+        questions = [question.format() for question in selection]
+        current_questions = questions[start:end]
+        return current_questions
+
     @app.route('/categories')
     def get_categories():
         categories = Category.query.order_by(Category.id).all()
@@ -39,7 +38,6 @@ def create_app(test_config=None):
         category_list = []
         for cat in categories:
             category_list.append(cat.type)
-
         return jsonify({'success': True,
                         'status_code': 200,
                         'categories': category_list,
@@ -73,7 +71,6 @@ def create_app(test_config=None):
                 abort(404)
             question.delete()
             return jsonify({'success': True,
-                            'status_code': 200,
                             'question_id': question_id,
                             'total_questions': len(Question.query.all())})
         except:
@@ -87,18 +84,16 @@ def create_app(test_config=None):
         new_category = data.get('category', None)
         new_difficulty = data.get('difficulty', None)
         tag = data.get('searchTerm', None)
-
         try:
-            if tag is not None:
+            if tag:
                 search_term = '%{}%'.format(tag)
                 selection = db.session.query(Question)\
                     .filter(Question.question.ilike(search_term))\
                     .order_by(Question.id).all()
                 if selection is None:
                     abort(404)
-                paginate_questions = paginate_questions(request, selection)
+                paginated_questions = paginate_questions(request, selection)
                 result = jsonify({'success': True,
-                                  'status_code': 200,
                                   'current_category': None,
                                   'total_questions': len(Question.query.all()),
                                   'questions': paginate_questions})
@@ -109,16 +104,18 @@ def create_app(test_config=None):
                                         category=new_category,
                                         difficulty=new_difficulty)
                 Question.insert(new_question)
+                print(new_question)
+                print(Question.query.all())
                 selection = Question.query.order_by(Question.id).all()
                 paginated_questions = paginate_questions(request, selection)
+
                 result = jsonify({'success': True,
                                   'question_id': new_question.id,
-                                  'status_code': 200,
                                   'total_questions': len(Question.query.all()),
                                   'current_category': new_category.type,
                                   'questions': paginated_questions})
                 return result
-        except:
+        except BaseException:
             abort(422)
 
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
