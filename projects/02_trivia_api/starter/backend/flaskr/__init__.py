@@ -87,7 +87,7 @@ def create_app(test_config=None):
         try:
             if tag:
                 search_term = '%{}%'.format(tag)
-                selection = db.session.query(Question)\
+                selection = Question.query\
                     .filter(Question.question.ilike(search_term))\
                     .order_by(Question.id).all()
                 if selection is None:
@@ -104,15 +104,12 @@ def create_app(test_config=None):
                                         category=new_category,
                                         difficulty=new_difficulty)
                 Question.insert(new_question)
-                print(new_question)
-                print(Question.query.all())
                 selection = Question.query.order_by(Question.id).all()
                 paginated_questions = paginate_questions(request, selection)
 
                 result = jsonify({'success': True,
                                   'question_id': new_question.id,
                                   'total_questions': len(Question.query.all()),
-                                  'current_category': new_category.type,
                                   'questions': paginated_questions})
                 return result
         except BaseException:
@@ -155,7 +152,6 @@ def create_app(test_config=None):
     def play():
         data = request.get_json()
         prev_ques = data['previous_questions']
-        print(len(prev_ques))
         category_id = data['quiz_category']['id']
         if category_id != 0:
             if len(prev_ques) == 0:
@@ -176,7 +172,6 @@ def create_app(test_config=None):
             abort(404)
 
         return jsonify({'success': True,
-                        'status_code': 200,
                         'question': next_ques})
 
     @app.errorhandler(404)
@@ -190,6 +185,12 @@ def create_app(test_config=None):
         return jsonify({'success': False,
                         'error': 422,
                         'message': 'Request cannot be processed.'}), 422
+
+    @app.errorhandler(500)
+    def server_error(error):
+        return jsonify({'success': False,
+                        'error': 500,
+                        'message': 'Request cannot be processed.'}), 500
 
     @app.errorhandler(400)
     def bad_request(error):

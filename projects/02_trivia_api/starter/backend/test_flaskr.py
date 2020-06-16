@@ -70,8 +70,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['total_questions'])
-        self.assertTrue(data['category'])
-
+        
     # Test search functionality of /questions endpoint
     def test_question_search_by_term(self):
         res = self.client().post('/questions', json={'searchTerm': 'actor'})
