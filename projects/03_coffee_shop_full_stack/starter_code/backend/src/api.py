@@ -33,6 +33,7 @@ def get_drinks_short():
 
 
 @app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks_detail')
 def get_drinks_detail(payload):
     drink_list = []
     all_drinks = Drink.query.all()
@@ -45,6 +46,7 @@ def get_drinks_detail(payload):
 
 
 @app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
 def post_drinks(payload):
     body = request.get_json()
 
@@ -71,6 +73,7 @@ def post_drinks(payload):
 
 
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
 def update_drinks(payload, drink_id):
     body = request.get_json()
 
@@ -103,6 +106,7 @@ def update_drinks(payload, drink_id):
 
 
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
 def delete_drinks(payload, drink_id):
     drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
     if drink == None:
