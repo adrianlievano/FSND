@@ -74,6 +74,7 @@ def create_app(test_config=None):
             question.delete()
             return jsonify({'success': True,
                             'status_code': 200,
+                            'question_id': question_id,
                             'total_questions': len(Question.query.all())})
         except:
             abort(422)
@@ -111,7 +112,8 @@ def create_app(test_config=None):
                 selection = Question.query.order_by(Question.id).all()
                 paginated_questions = paginate_questions(request, selection)
                 result = jsonify({'success': True,
-                                  'created': new_question.id,
+                                  'question_id': new_question.id,
+                                  'status_code': 200,
                                   'total_questions': len(Question.query.all()),
                                   'current_category': new_category.type,
                                   'questions': paginated_questions})
