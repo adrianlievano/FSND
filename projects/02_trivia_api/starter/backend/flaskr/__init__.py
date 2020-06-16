@@ -96,7 +96,7 @@ def create_app(test_config=None):
                 result = jsonify({'success': True,
                                   'current_category': None,
                                   'total_questions': len(Question.query.all()),
-                                  'questions': paginate_questions})
+                                  'questions': paginated_questions})
                 return result
             else:
                 new_question = Question(question=new_question,
@@ -128,6 +128,7 @@ def create_app(test_config=None):
             if questions is None:
                 abort(404)
             formatted_questions = paginate_questions(request, questions)
+            print(category.type)
             return jsonify({'success': True,
                             'status_code': 200,
                             'total_questions': len(Question.query.all()),

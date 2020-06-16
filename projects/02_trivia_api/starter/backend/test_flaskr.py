@@ -70,7 +70,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['total_questions'])
-        
+
     # Test search functionality of /questions endpoint
     def test_question_search_by_term(self):
         res = self.client().post('/questions', json={'searchTerm': 'actor'})
@@ -79,14 +79,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     def test_question_invalid_search_422_by_term(self):
-        res = self.client().post('/questions', json={'searchTerm': 'Godzilla'})
+        res = self.client().post('/questions', json={'searchTerm': '!!!!!!Godzilla!!!!!'})
         data = json.loads(res.data)
         self.assertEqual(data['success'], False)
         self.assertEqual(res.status_code, 422)
 
     # Test /category/<int:category_id>/questions endpoint
     def test_question_search_by_category(self):
-        res = self.client().get('/category/1/questions')
+        res = self.client().get('/categories/1/questions')
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
