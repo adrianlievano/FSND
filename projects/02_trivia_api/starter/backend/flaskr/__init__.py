@@ -126,7 +126,6 @@ def create_app(test_config=None):
             if questions is None:
                 abort(404)
             formatted_questions = paginate_questions(request, questions)
-            print(category.type)
             return jsonify({'success': True,
                             'total_questions': len(Question.query.all()),
                             'current_category': category.type,
@@ -137,6 +136,8 @@ def create_app(test_config=None):
     @app.route('/quizzes', methods=['POST'])
     def play():
         data = request.get_json()
+        if not data:
+            abort(400)
         prev_ques = data['previous_questions']
         category_id = data['quiz_category']['id']
         if category_id != 0:
@@ -153,9 +154,9 @@ def create_app(test_config=None):
                 current_q = Question.query.all()
             else:
                 current_q = Question.query.filter(Question.id.notin_(prev_ques)).all()
-        next_ques = random.choice(current_q).format()
-        if next_ques is None:
+        if len(current_q) == 0:
             abort(404)
+        next_ques = random.choice(current_q).format()
 
         return jsonify({'success': True,
                         'question': next_ques})

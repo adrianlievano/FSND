@@ -111,9 +111,20 @@ POST '/quizzes'
 ```
 
 ### POST '/questions'
-- Adds a new question using the client-side form to the Question database for the game.
-- Request Arguments: The online form on the client side after a user clicks 'Add' a question.
-- Returns: An object of questions that contains the new question created. The object contains data about the number of total questions, the new added question id, and a success indicator. 
+- Description: 
+    Adds a new question using the client-side form to the Question database for the game.
+- Request Arguments: 
+    The online form on the client side after a user clicks 'Add' a question. This endpoint also accepts a 'search_term' to search questions. 
+
+    If using a search term,
+    - Returns a success value, list of paginated questions, number of total questions, and current category. curl http://127.0.0.1:5000/questions -X POST -H "Content-Type: application/json" -d 
+
+```
+    '{"question":"What is the southern most continent?", "answer":"Antartica", "difficulty":"5", "category":"2"}'
+```
+
+    If performing curl http://127.0.0.1:5000/questions 
+    - Returns: An object of questions that contains the new question created. The object contains data about the number of total questions, the new added question id, and a success indicator. 
 
 Sample output: 
 
@@ -139,9 +150,13 @@ Sample output:
 ```
 
 ### DELETE '/questions/<int:question_id>'
-- Deletes a question from the Question database. 
-- Request Arguments: The id of corresponding question that the user wishes to remove. 
-- Returns: An dictionary of values that correspond to a success indicator, the question id removed, and the new total number of questions in the game.
+- Description:
+    Deletes a question from the Question database. 
+- Request Arguments: 
+    The id of corresponding question that the user wishes to remove. 
+    '/questions/1'
+- Returns: 
+    An dictionary of values that correspond to a success indicator, the question id removed, and the new total number of questions in the game.
 
 Sample Output: 
 ```
@@ -153,9 +168,12 @@ Sample Output:
 ```
 
 ### GET '/categories/<int:category_id>/questions'
-- Gets a list of questions associated with a category id. 
-- Request Arguments: The id of a category_id that the user wishes to remove. 
-- Returns: A success value, list of questions for a give category_id, total number of questions, the category type, and a current category.
+- Description:
+    Gets a list of questions associated with a category id. 
+- Request Arguments: 
+    The id of a category_id that the user wishes to remove. A sample endpoint call is '/categories/3/questions'
+- Returns: 
+    A success value, list of questions for a give category_id, total number of questions, the category type, and a current category.
 
 Sample Output:
 
@@ -181,9 +199,12 @@ total_questions': 10,
 ```
 
 ### POST '/quizzes'
-- Starts the game and allows the user to answer a quiz question.
-- Request Arguments: None
-- Returns: A success value and the next question that will be served to the user that has not appeared in the past. 
+- Description:
+    Starts the game and allows the user to answer a quiz question.
+- Request Arguments: 
+    None
+- Returns: 
+    A success value and the next question that will be served to the user that has not appeared in the past. Below is a sample output:
 
 ```
 Sample Output:

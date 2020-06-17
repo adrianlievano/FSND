@@ -118,8 +118,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_422_quizzes_failure(self):
         res = self.client().post('/quizzes', json={'previous_questions': [],
-                                                   'quiz_category': {'id': 'A'}})
-        data = json.loads(res.data)
+                                                   'quiz_category': {'id': 10}})
         self.assertTrue(res.status_code, 422)
 
 
