@@ -158,8 +158,8 @@ class AppTestCase(unittest.TestCase):
     def test_422_patch_movie_failure(self):
         res = self.client().post('/movies', json =self.sample_movie)
         data = json.loads(res.data)
-        actor_id = data['movie_id']
+        movie_id = data['movie_id']
         query_string = ('/movies/{}').format(movie_id)
         patch_res = self.client().patch(query_string, json={'title': 1})
         data_patch = json.loads(patch_res.data)
-        self.assertEqual(patch_res.status_code, 422)
+        self.assertEqual(data_patch.status_code, 422)
