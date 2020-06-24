@@ -2,7 +2,6 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
-
 from flaskr import create_app
 from models import setup_db, Actors, Movies
 
@@ -26,11 +25,11 @@ class AppTestCase(unittest.TestCase):
             # create all tables
             self.db.create_all()
 
-        sample_actor = {'name': 'Tom Cruise', 
+        self.sample_actor = {'name': 'Tom Cruise', 
                         'Age': 34,
                         'Gender': 'Male'}
         
-        sample_movie = {'title': 'Mission Impossible',
+        self.sample_movie = {'title': 'Mission Impossible',
                         'release_date': '2020-05-02',
                         'genre': 'Action'}
 
@@ -45,7 +44,7 @@ class AppTestCase(unittest.TestCase):
 
 
     # Test get movies endpoint
-    def test_get_actors(self):
+    def test_get_movies(self):
         res = self.client().get('/movies')
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
@@ -55,7 +54,7 @@ class AppTestCase(unittest.TestCase):
 
     #Test Delete Actor Endpoint
     def test_delete_actors(self):
-        res = self.client().post('/actors', json = sample_actor)
+        res = self.client().post('/actors', json = self.sample_actor)
         data = json.loads(res.data)
         actor_id = data['actor_id']
         query_string = ('/actors/{}').format(actor_id)
@@ -74,7 +73,7 @@ class AppTestCase(unittest.TestCase):
     
     #Test Delete Movie Endpoint
     def test_delete_movies(self):
-        res = self.client().post('/movies', json = sample_movie)
+        res = self.client().post('/movies', json = self.sample_movie)
         data = json.loads(res.data)
         movie_id = data['movie_id']
         query_string = ('/movies/{}').format(movie_id)
@@ -94,7 +93,7 @@ class AppTestCase(unittest.TestCase):
 
     # Test add functionality of /actors endpoint
     def test_add_actor(self):
-        res = self.client().post('/actors', json=sample_actor)
+        res = self.client().post('/actors', json=self.sample_actor)
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['actors'])
@@ -109,7 +108,7 @@ class AppTestCase(unittest.TestCase):
 
     # Test add functionality of /movies endpoint
     def test_add_movie(self):
-        res = self.client().post('/movies', json=sample_movie)
+        res = self.client().post('/movies', json=self.sample_movie)
         data = json.loads(res.data)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['movies'])
@@ -124,7 +123,7 @@ class AppTestCase(unittest.TestCase):
 
     # Test patch functionality of /actors endpoint
     def test_patch_actor(self):
-        res = self.client().post('/actors', json = sample_actor)
+        res = self.client().post('/actors', json =self.sample_actor)
         data = json.loads(res.data)
         actor_id = data['actor_id']
         query_string = ('/actors/{}').format(actor_id)
@@ -135,18 +134,18 @@ class AppTestCase(unittest.TestCase):
 
 
     def test_422_patch_actor_failure(self):
-        res = self.client().post('/actors', json = sample_actor)
+        res = self.client().post('/actors', json =self.sample_actor)
         data = json.loads(res.data)
         actor_id = data['actor_id']
         query_string = ('/actors/{}').format(actor_id)
         patch_res = self.client().patch(query_string, json={'name': 1})
         data_patch = json.loads(patch_res.data)
-        self.assertEqual(patch_res.status_code, 422)
+        self.assertEqual(data_patch.status_code, 422)
 
 
     # Test patch functionality of /movies endpoint
     def test_patch_actor(self):
-        res = self.client().post('/movies', json = sample_movie)
+        res = self.client().post('/movies', json =self.sample_movie)
         data = json.loads(res.data)
         movie_id = data['movie_id']
         query_string = ('/movie/{}').format(movie_id)
@@ -157,7 +156,7 @@ class AppTestCase(unittest.TestCase):
 
 
     def test_422_patch_movie_failure(self):
-        res = self.client().post('/movies', json = sample_movie)
+        res = self.client().post('/movies', json =self.sample_movie)
         data = json.loads(res.data)
         actor_id = data['movie_id']
         query_string = ('/movies/{}').format(movie_id)
